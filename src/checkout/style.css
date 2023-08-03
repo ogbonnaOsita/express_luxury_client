@@ -1,0 +1,63 @@
+.alt-link {
+    border: none;
+    background: none;
+  }
+  
+  .alt-link span {
+    padding-bottom: 5px;
+    font-size: 14px;
+    padding-right: 3px;
+  }
+  
+  .alt-link svg {
+    transform: translateX(-8px);
+    transition: all 0.3s ease;
+  }
+  
+  .alt-link:hover svg {
+    transform: translateX(0);
+  }
+  
+  .alt-link:active svg {
+    transform: scale(0.9);
+  }
+  
+  .alt-option {
+    position: relative;
+    padding-bottom: 20px;
+  }
+  
+  .alt-option:after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    transform: scaleX(0);
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: #a8623e;
+    transform-origin: bottom right;
+    transition: transform 0.25s ease-out;
+  }
+  
+  .alt-link:hover .alt-option:after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+  }
+  
+  .spinner {
+    animation-name: spin;
+    animation-duration: 500ms;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+  }
+  
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
