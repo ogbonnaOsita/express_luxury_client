@@ -20,7 +20,7 @@ import PasswordReset from "./logins/passwordReset";
 
 // apollo client
 const client = new ApolloClient({
-  uri: "http://localhost:1337/graphql",
+  uri: `${import.meta.env.VITE_APP_API_URL}/graphql`,
   cache: new InMemoryCache(),
 });
 
