@@ -21,11 +21,7 @@ import NotFound from "./404";
 
 // apollo client
 const client = new ApolloClient({
-<<<<<<< HEAD
   uri: `${import.meta.env.VITE_APP_GRAPHQL_URL}graphql`,
-=======
-  uri: `${import.meta.env.VITE_APP_API_URL}/graphql`,
->>>>>>> d4ed3e9539e416acd223e09835b2d28e8530ab3a
   cache: new InMemoryCache(),
 });
 
