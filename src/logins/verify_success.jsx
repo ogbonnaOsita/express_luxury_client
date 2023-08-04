@@ -9,7 +9,7 @@ const VerifySuccess = () => {
       {/* Page Container */}
       <div
         id="page-container"
-        className="flex flex-col mx-auto w-full min-w-[320px] bg-gray-100 dark:text-gray-100 dark:bg-gray-900"
+        className="flex flex-col mx-auto w-full min-w-[320px] bg-gray-100"
       >
         {/* Page Content */}
         <main
@@ -31,7 +31,7 @@ const VerifySuccess = () => {
               {/* END Header */}
 
               {/* Sign In Form */}
-              <div className="flex flex-col rounded-lg shadow-sm bg-white overflow-hidden dark:text-gray-100 dark:bg-gray-800">
+              <div className="flex flex-col rounded-lg shadow-sm bg-white overflow-hidden">
                 <div className="p-5 md:px-16 md:py-12 grow">
                   <div className="flex flex-col items-center text-center">
                     <img src="/assets/success.png" className="h-[60px] mb-3" />

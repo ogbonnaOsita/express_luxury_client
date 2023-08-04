@@ -89,7 +89,7 @@ export default function SignIn() {
       {/* Page Container */}
       <div
         id="page-container"
-        className="flex flex-col mx-auto w-full min-w-[320px] bg-gray-100 dark:text-gray-100 dark:bg-gray-900"
+        className="flex flex-col mx-auto w-full min-w-[320px] bg-gray-100  "
       >
         {/* Page Content */}
         <main id="page-content" className="flex flex-auto flex-col max-w-full">
@@ -101,14 +101,14 @@ export default function SignIn() {
                 <h1 className="text-2xl font-bold inline-flex items-center mb-2 space-x-2">
                   <span>Welcome</span>
                 </h1>
-                <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                <h2 className="text-sm font-medium text-gray-500">
                   Please enter your login details
                 </h2>
               </header>
               {/* END Header */}
 
               {/* Sign In Form */}
-              <div className="flex flex-col rounded-lg shadow-sm bg-white overflow-hidden dark:text-gray-100 dark:bg-gray-800">
+              <div className="flex flex-col rounded-lg shadow-sm bg-white overflow-hidden ">
                 <div className="p-5 md:px-16 md:py-12 grow">
                   {formError && (
                     <Alert sx={{ marginBottom: "5px" }} severity="error">
@@ -177,7 +177,7 @@ export default function SignIn() {
                       <div className="flex justify-end space-x-2 mb-1">
                         <Link
                           to="/forgot_password"
-                          className="text-xs font-medium inline-block text-brown-600 hover:text-brown-400 dark:text-brown-400 dark:hover:text-brown-300"
+                          className="text-xs font-medium inline-block text-brown-600 hover:text-brown-400 "
                         >
                           Forgot Password?
                         </Link>
@@ -203,11 +203,11 @@ export default function SignIn() {
                     </div>
                   </form>
                 </div>
-                <div className="p-5 md:px-16 grow text-sm text-center bg-gray-50 dark:bg-gray-700/50">
+                <div className="p-5 md:px-16 grow text-sm text-center bg-gray-50 ">
                   Don’t have an account yet?
                   <Link
                     to="/sign_up"
-                    className="alt-link font-medium text-brown-600 hover:text-brown-400 dark:text-brown-400 dark:hover:text-brown-300"
+                    className="alt-link font-medium text-brown-600 hover:text-brown-400 "
                   >
                     <span className="alt-option"> Sign Up</span>
                   </Link>

@@ -79,14 +79,14 @@ export default function Checkout() {
     <>
       {/* Checkout Section: Simple Box */}
       {user && (
-        <div className="bg-gray-100 dark:text-gray-100 dark:bg-gray-900">
+        <div className="bg-gray-100">
           <div className="container xl:max-w-7xl mx-auto px-4 py-8 lg:px-8 lg:py-16">
             {/* Box */}
-            <div className="flex flex-col rounded-xs shadow-sm bg-white overflow-hidden dark:text-gray-100 dark:bg-gray-800">
+            <div className="flex flex-col rounded-xs shadow-sm bg-white overflow-hidden">
               <div className="p-5 grow w-full max-w-lg mx-auto">
                 {/* Heading */}
                 <div className="text-center mt-5">
-                  <h6 className="text-sm uppercase font-bold tracking-wider text-brown-600 mb-1 dark:text-brown-400">
+                  <h6 className="text-sm uppercase font-bold tracking-wider text-brown-600 mb-1">
                     Checkout
                   </h6>
                   <h1 className="md:text-lg text-sm font-bold mb-1">
@@ -95,14 +95,14 @@ export default function Checkout() {
                   <h3 className="flex items-center my-5">
                     <span
                       aria-hidden="true"
-                      className="grow bg-gray-200 rounded h-0.5 dark:bg-gray-700/75"
+                      className="grow bg-gray-200 rounded h-0.5"
                     />
                     <span className="text-sm font-medium mx-3 text-gray-400">
                       <LocalShippingOutlinedIcon />
                     </span>
                     <span
                       aria-hidden="true"
-                      className="grow bg-gray-200 rounded h-0.5 dark:bg-gray-700/75"
+                      className="grow bg-gray-200 rounded h-0.5"
                     />
                   </h3>
                 </div>

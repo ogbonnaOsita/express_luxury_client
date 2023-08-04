@@ -69,7 +69,7 @@ export default function PasswordReset() {
       {/* Page Container */}
       <div
         id="page-container"
-        className="flex flex-col mx-auto w-full min-w-[320px] bg-gray-100 dark:text-gray-100 dark:bg-gray-900"
+        className="flex flex-col mx-auto w-full min-w-[320px] bg-gray-100"
       >
         {/* Page Content */}
         <main id="page-content" className="flex flex-auto flex-col max-w-full">
@@ -81,14 +81,14 @@ export default function PasswordReset() {
                 <h1 className="text-2xl font-bold inline-flex items-center mb-2 space-x-2">
                   <span>Password Reset</span>
                 </h1>
-                <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                <h2 className="text-sm font-medium text-gray-500">
                   Create a new secured password
                 </h2>
               </header>
               {/* END Header */}
 
               {/* Sign In Form */}
-              <div className="flex flex-col rounded-lg shadow-sm bg-white overflow-hidden dark:text-gray-100 dark:bg-gray-800">
+              <div className="flex flex-col rounded-lg shadow-sm bg-white overflow-hidden">
                 <div className="p-5 md:px-16 md:py-12 grow">
                   {formError && (
                     <Alert sx={{ marginBottom: "5px" }} severity="error">
