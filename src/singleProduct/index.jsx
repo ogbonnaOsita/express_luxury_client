@@ -2,7 +2,7 @@
 import { IconButton } from "@mui/material";
 import { Box } from "@mui/material";
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ButtonContained from "../components/ButtonContained";
 import Footer from "../components/Footer";
 import { useQuery, gql } from "@apollo/client";
@@ -90,10 +90,17 @@ const PRODUCT = gql`
 `;
 
 const SingleProduct = () => {
+  const navigate = useNavigate();
   const { slug } = useParams();
   const { data, loading, error } = useQuery(PRODUCT, {
     variables: { slug: slug },
   });
+
+  useEffect(() => {
+    if (data && data.products.data == 0) {
+      navigate("/not-found");
+    }
+  }, [data]);
 
   // Share to socials
   const pageUrl = encodeURI(document.location.href);
@@ -117,7 +124,7 @@ const SingleProduct = () => {
   });
 
   useEffect(() => {
-    if (data) {
+    if (data && data.products.data.length !== 0) {
       if (data.products.data[0].attributes.sizes.data.length > 0) {
         setSize(data.products.data[0].attributes.sizes.data[0].attributes.size);
       }
@@ -164,7 +171,7 @@ const SingleProduct = () => {
   let arrayLength;
 
   const likeSuggestions = useMemo(() => {
-    if (data) {
+    if (data && data.products.data.length !== 0) {
       arr =
         data.products.data[0].attributes.categories.data[0].attributes.products
           .data;
@@ -189,7 +196,7 @@ const SingleProduct = () => {
       <section className="text-gray-600 body-font overflow-hidden">
         {loading && <Loader />}
         {error && <div>{error}</div>}
-        {data && (
+        {data && data.products.data.length !== 0 && (
           <div className="container px-5 py-12 md:py-12 lg:py-12 mx-auto">
             <div className=" mx-auto grid gap-2 grid-cols-1 md:grid-cols-2 place-items-center">
               <Carousel images={data.products.data[0].attributes.images} />

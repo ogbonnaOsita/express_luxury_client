@@ -79,7 +79,7 @@ const Cart = () => {
                           {product.title}
                         </span>
                         <span className="font-bold mr-2">
-                          ${product.price}{" "}
+                          ${product.price.toFixed(1)}{" "}
                           {product.size && (
                             <span className="font-medium">
                               | Size: {product.size}
@@ -107,7 +107,7 @@ const Cart = () => {
                     </div>
                     <div className="flex flex-col items-end">
                       <span className="font-semibold text-sm">
-                        ${product.price * product.quantity}
+                        ${(product.price * product.quantity).toFixed(1)}
                       </span>
 
                       <div className="flex my-2 place-items-center">

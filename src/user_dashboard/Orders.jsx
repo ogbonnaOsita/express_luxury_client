@@ -31,7 +31,7 @@ const Orders = () => {
   const getOrderList = () => {
     makeAuthorizedRequest
       .get(
-        `/orders?filters[buyerEmail[$eq]=${user.email}&[fields]=products&[fields]=status&[fields]=createdAt`
+        `/orders?filters[buyerEmail][$eq]=${user.email}&[fields]=products&[fields]=status&[fields]=createdAt`
       )
       .then((res) => {
         let listOrders = [];

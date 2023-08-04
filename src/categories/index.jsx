@@ -1,5 +1,5 @@
 import { Box, Pagination } from "@mui/material";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import CategoryBanner from "../components/CategoryBanner";
 import Footer from "../components/Footer";
 import ProductList from "../components/ProductList";
@@ -11,7 +11,7 @@ import { useState } from "react";
 import { useMemo } from "react";
 import { useEffect } from "react";
 import GoToTop from "../utils/GoToTop";
-
+import { makeRequest } from "../../makeRequest";
 
 const PRODUCTS = gql`
   query ($slug: String!, $sort: [String!], $page: Int!, $pageLimit: Int!) {
@@ -112,8 +112,21 @@ const Categories = () => {
   const [sort, setSort] = useState(sortOptions[0].value);
   const [page, setPage] = useState(1);
   const pageLimit = 20;
+  const navigate = useNavigate();
+
+  const categories = async () => {
+    await makeRequest.get("/categories").then((res) => {
+      const ifCategory = res.data.data.some(
+        (category) => category.attributes.slug == slug
+      );
+      if (slug !== "new-arrivals" && !ifCategory) {
+        navigate("/not-found");
+      }
+    });
+  };
 
   useEffect(() => {
+    categories();
     setPage(1);
   }, [slug]);
 

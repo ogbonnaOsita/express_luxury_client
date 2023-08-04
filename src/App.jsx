@@ -17,10 +17,11 @@ import PrivateRoute from "./utils/PrivateRoute";
 import VerifyAccount from "./logins/verify";
 import VerifySuccess from "./logins/verify_success";
 import PasswordReset from "./logins/passwordReset";
+import NotFound from "./404";
 
 // apollo client
 const client = new ApolloClient({
-  uri: "http://localhost:1337/graphql",
+  uri: `${import.meta.env.VITE_APP_GRAPHQL_URL}graphql`,
   cache: new InMemoryCache(),
 });
 
@@ -80,6 +81,8 @@ function App() {
                 }
               />
               <Route path="/categories/:slug" element={<Categories />}></Route>
+              <Route path="/not-found" element={<NotFound />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
         </ApolloProvider>
