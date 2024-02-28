@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { makeRequest } from "../../makeRequest";
-import { v4 as uuid } from "uuid";
 import { useState } from "react";
 import "./style.css";
 import { Alert } from "@mui/material";
@@ -17,9 +16,10 @@ const phoneRegExp =
   /^(?:(?:(?:\+?234(?:h1)?|01)h*)?(?:\(\d{3}\)|\d{3})|\d{4})(?:\W*\d{3})?\W*\d{4}$/;
 
 const signupSchema = yup.object().shape({
-  fullName: yup.string().required("required"),
+  firstName: yup.string().required("required"),
+  lastName: yup.string().required("required"),
   email: yup.string().email("Invalid email").required("required"),
-  phoneNumber: yup
+  phone: yup
     .string()
     .matches(phoneRegExp, "Please enter a valid phone number")
     .required("required"),
@@ -48,34 +48,24 @@ export default function SignUp() {
 
   const handleSignUp = async (values) => {
     setIsLoading(true);
-    delete values.confirmPassword;
-    const unique_id = uuid();
     let data = {
       email: values.email,
-      fullName: values.fullName,
-      phoneNumber: parseInt(values.phoneNumber),
+      firstName: values.firstName,
+      lastName: values.lastName,
+      phone: values.phone,
       password: values.password,
-      username: unique_id,
+      passwordConfirm: values.confirmPassword,
+      baseURL:
+        location.protocol + "//" + location.host + "/account_verification",
     };
     await makeRequest
-      .post("/auth/local/register", data)
+      .post("/users/signup", data)
       .then(() => {
-        // window.localStorage.setItem("JWT_TOKEN", JSON.stringify(res.data.jwt));
-        // handleSetToken(JSON.parse(localStorage.getItem("JWT_TOKEN")));
         setIsLoading(false);
         navigate("/sign_up/register_success");
       })
       .catch((err) => {
-        let error;
-        if (err.response.data.error.message.includes("Email or Username are")) {
-          error = err.response.data.error.message.replace(
-            "Email or Username are",
-            "Email is"
-          );
-        } else {
-          error = err.response.data.error.message;
-        }
-        setFormError(error);
+        setFormError(err.response.data.message);
         setIsLoading(false);
       });
   };
@@ -117,23 +107,49 @@ export default function SignUp() {
                     className="space-y-3"
                     onSubmit={handleSubmit(handleSignUp)}
                   >
-                    <div>
-                      <label htmlFor="fullName" className="text-xs font-medium">
-                        Full Name
-                      </label>
-                      <input
-                        type="text"
-                        id="fullName"
-                        name="fullName"
-                        placeholder="Enter your full name"
-                        {...register("fullName")}
-                        className="w-full block border placeholder-gray-500 px-3 py-2 leading-6 rounded-sm border-gray-200"
-                      />
-                      {errors.fullName && (
-                        <span className="text-red-500 text-xs">
-                          {errors.fullName?.message}
-                        </span>
-                      )}
+                    <div className="flex gap-2">
+                      <div className="w-full md:w-1/2">
+                        <label
+                          htmlFor="firstName"
+                          className="text-xs font-medium"
+                        >
+                          First Name
+                        </label>
+                        <input
+                          type="text"
+                          id="firstName"
+                          name="firstName"
+                          placeholder="Enter your first name"
+                          {...register("firstName")}
+                          className="w-full block border placeholder-gray-500 px-3 py-2 leading-6 rounded-sm border-gray-200"
+                        />
+                        {errors.firstName && (
+                          <span className="text-red-500 text-xs">
+                            {errors.firstName?.message}
+                          </span>
+                        )}
+                      </div>
+                      <div className="w-full md:w-1/2">
+                        <label
+                          htmlFor="lastName"
+                          className="text-xs font-medium"
+                        >
+                          Last Name
+                        </label>
+                        <input
+                          type="text"
+                          id="lastName"
+                          name="lastName"
+                          placeholder="Enter your last name"
+                          {...register("lastName")}
+                          className="w-full block border placeholder-gray-500 px-3 py-2 leading-6 rounded-sm border-gray-200"
+                        />
+                        {errors.lastName && (
+                          <span className="text-red-500 text-xs">
+                            {errors.lastName?.message}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div>
                       <label htmlFor="email" className="text-xs font-medium">
@@ -154,23 +170,20 @@ export default function SignUp() {
                       )}
                     </div>
                     <div>
-                      <label
-                        htmlFor="phoneNumber"
-                        className="text-xs font-medium"
-                      >
+                      <label htmlFor="phone" className="text-xs font-medium">
                         Phone Number
                       </label>
                       <input
                         type="number"
-                        id="phoneNumber"
-                        name="phoneNumber"
+                        id="phone"
+                        name="phone"
                         placeholder="Enter your phone number"
-                        {...register("phoneNumber")}
+                        {...register("phone")}
                         className="w-full block border placeholder-gray-500 px-3 py-2 leading-6 rounded-sm border-gray-200"
                       />
-                      {errors.phoneNumber && (
+                      {errors.phone && (
                         <span className="text-red-500 text-xs">
-                          {errors.phoneNumber?.message}
+                          {errors.phone?.message}
                         </span>
                       )}
                     </div>

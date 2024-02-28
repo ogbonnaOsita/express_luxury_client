@@ -6,7 +6,7 @@ import { useState } from "react";
 
 const Carousel = ({ images }) => {
   const [index, setIndex] = useState(0);
-  const slides = images.data.map((image) => image.attributes.url);
+  const slides = images.map((image) => image);
 
   const prevSlide = () => {
     const isFirstSlide = index === 0;
@@ -50,7 +50,7 @@ const Carousel = ({ images }) => {
       <img
         alt="ecommerce"
         className=" p-2 md:p-2 m-auto h-72 sm:h-96 sm:w-96 md:h-72 lg:h-96 object-contain object-center rounded"
-        src={import.meta.env.VITE_APP_UPLOAD_URL + slides[index]}
+        src={slides[index]}
       />
       {slides.length > 1 ? (
         <>

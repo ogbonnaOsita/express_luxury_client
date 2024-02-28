@@ -11,10 +11,10 @@ const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [error, setError] = useState();
   const [currentPage, setCurrentPage] = useState(1);
-  const [postPerPage, setPostPerPage] = useState(4);
+  const [ordersPerPage, setOrdersPerPage] = useState(4);
 
-  const lastPostIndex = currentPage * postPerPage;
-  const firstPostIndex = lastPostIndex - postPerPage;
+  const lastPostIndex = currentPage * ordersPerPage;
+  const firstPostIndex = lastPostIndex - ordersPerPage;
   const currentOrderList = orders.slice(firstPostIndex, lastPostIndex);
 
   const getUserInfo = () => {
@@ -30,17 +30,17 @@ const Orders = () => {
 
   const getOrderList = () => {
     makeAuthorizedRequest
-      .get(
-        `/orders?filters[buyerEmail][$eq]=${user.email}&[fields]=products&[fields]=status&[fields]=createdAt`
-      )
+      .get(`/orders/userOrders`)
       .then((res) => {
         let listOrders = [];
-        res.data.data.map((order) => {
-          order.attributes.products.forEach((product) => {
+        res.data.data.data.map((order) => {
+          order.items.forEach((product) => {
             listOrders.push({
-              product,
-              date: order.attributes.createdAt,
-              status: order.attributes.status,
+              product: product.product,
+              quantity: product.qty,
+              price: product.price,
+              date: order.createdAt,
+              status: order.status,
             });
           });
         });
@@ -48,7 +48,8 @@ const Orders = () => {
         setOrders(listOrders);
       })
       .catch((err) => {
-        setError(err.response.data.error.message);
+        // setError(err);
+        console.log(err);
       });
   };
 
@@ -65,7 +66,7 @@ const Orders = () => {
   //////////////// Start Pagination ///////////////////////
   const pagination = useMemo(() => {
     if (orders) {
-      const noOfPages = Math.ceil(orders.length / postPerPage);
+      const noOfPages = Math.ceil(orders.length / ordersPerPage);
       return noOfPages;
     }
   }, [orders]);

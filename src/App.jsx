@@ -14,8 +14,8 @@ import ForgotPassword from "./logins/forgotPassword";
 import UserDashboard from "./user_dashboard";
 import Verify from "./verify_checkout";
 import PrivateRoute from "./utils/PrivateRoute";
-import VerifyAccount from "./logins/verify";
-import VerifySuccess from "./logins/verify_success";
+import RegistrationSuccess from "./logins/verify";
+import ConfirmAccountVerification from "./logins/verify_account";
 import PasswordReset from "./logins/passwordReset";
 import NotFound from "./404";
 
@@ -32,7 +32,7 @@ function App() {
       <CssBaseline />
       <>
         <ApolloProvider client={client}>
-          <main className="App">
+          <main className="App min-h-full flex flex-col justify-between">
             <Navbar />
             <Routes>
               <Route path="/" element={<Home />} />
@@ -59,13 +59,17 @@ function App() {
               <Route
                 path="/sign_up/register_success"
                 element={
-                  token !== null ? <Navigate to="/" /> : <VerifyAccount />
+                  token !== null ? <Navigate to="/" /> : <RegistrationSuccess />
                 }
               />
               <Route
-                path="/verify_success"
+                path="/account_verification/:verify_token"
                 element={
-                  token !== null ? <Navigate to="/" /> : <VerifySuccess />
+                  token !== null ? (
+                    <Navigate to="/" />
+                  ) : (
+                    <ConfirmAccountVerification />
+                  )
                 }
               />
               <Route
@@ -75,7 +79,7 @@ function App() {
                 }
               />
               <Route
-                path="reset_password"
+                path="reset_password/:reset_token"
                 element={
                   token !== null ? <Navigate to="/" /> : <PasswordReset />
                 }

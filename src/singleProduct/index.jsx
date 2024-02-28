@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ButtonContained from "../components/ButtonContained";
 import Footer from "../components/Footer";
-import { useQuery, gql } from "@apollo/client";
 import Loader from "../components/Loader";
 import SectionTitle from "../components/SectionTitle";
 import ProductList from "../components/ProductList";
@@ -18,89 +17,52 @@ import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartReducer";
 import AlertBar from "../components/AlertBar";
 import { WhatsApp } from "@mui/icons-material";
-
-const PRODUCT = gql`
-  query ($slug: String!) {
-    products(filters: { slug: { eq: $slug } }) {
-      data {
-        id
-        attributes {
-          title
-          price
-          discount
-          description
-          newPrice
-          slug
-          images {
-            data {
-              attributes {
-                url
-              }
-            }
-          }
-          categories {
-            data {
-              id
-              attributes {
-                title
-                slug
-                products {
-                  data {
-                    id
-                    attributes {
-                      title
-                      price
-                      discount
-                      newPrice
-                      slug
-                      images {
-                        data {
-                          attributes {
-                            url
-                          }
-                        }
-                      }
-                      categories {
-                        data {
-                          id
-                          attributes {
-                            title
-                            slug
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-          sizes {
-            data {
-              id
-              attributes {
-                size
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-`;
+import useFetch from "../hooks/useFetch";
+import RatingComponent from "../components/Review_Component/RatingComponent";
+import ReviewRatings from "../components/Review_Component/ReviewRatings";
 
 const SingleProduct = () => {
   const navigate = useNavigate();
   const { slug } = useParams();
-  const { data, loading, error } = useQuery(PRODUCT, {
-    variables: { slug: slug },
-  });
+  const [similarProducts, setSimilarProducts] = useState();
+  const [activeTab, setActiveTab] = useState("reviews");
+
+  const {
+    data: product,
+    loading,
+    error,
+    refreshData,
+  } = useFetch(`/products/${slug}/slug`);
 
   useEffect(() => {
-    if (data && data.products.data == 0) {
+    const fetchSimilarProducts = async () => {
+      if (!loading && product) {
+        try {
+          // Fetch products with similar categories
+          const response = await fetch(
+            `${import.meta.env.VITE_BACKEND_API_URL}/products/category/${
+              product.data.data.category[0].slug
+            }`
+          );
+          if (!response.ok) {
+            throw new Error("Failed to fetch similar products");
+          }
+          const similarProductsData = await response.json();
+          setSimilarProducts(similarProductsData.data.data);
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    };
+
+    fetchSimilarProducts();
+  }, [loading, product]);
+
+  useEffect(() => {
+    if (!loading && !product) {
       navigate("/not-found");
     }
-  }, [data]);
+  }, [loading, product]);
 
   // Share to socials
   const pageUrl = encodeURI(document.location.href);
@@ -112,10 +74,7 @@ const SingleProduct = () => {
     window.open(url, "_blank");
   };
 
-  // console.log(data)
-
   const [quantity, setQuantity] = useState(1);
-  const [size, setSize] = useState("");
   const dispatch = useDispatch();
   const [alert, setAlert] = useState({
     message: "",
@@ -123,33 +82,17 @@ const SingleProduct = () => {
     type: "success",
   });
 
-  useEffect(() => {
-    if (data && data.products.data.length !== 0) {
-      if (data.products.data[0].attributes.sizes.data.length > 0) {
-        setSize(data.products.data[0].attributes.sizes.data[0].attributes.size);
-      }
-    }
-  }, [data]);
-
-  const handleChange = (event) => {
-    setSize(event.target.value);
-  };
-
   //////// Add to Cart //////////////
   const handleAddToCart = (product) => {
     const item = {
       id: product.id,
-      // slug: product.attrributes.slug,
-      title: product.attributes.title,
-      category: product.attributes.categories.data[0].attributes.title,
-      image: product.attributes.images.data[0].attributes.url,
-      price: product.attributes.newPrice,
+      slug: product.slug,
+      title: product.title,
+      category: product.category[0].title,
+      image: product.images[0],
+      price: product.price,
       quantity,
-      size,
     };
-    if (size == "") {
-      delete item.size;
-    }
     dispatch(addToCart({ item }));
     setAlert({
       ...alert,
@@ -171,21 +114,21 @@ const SingleProduct = () => {
   let arrayLength;
 
   const likeSuggestions = useMemo(() => {
-    if (data && data.products.data.length !== 0) {
-      arr =
-        data.products.data[0].attributes.categories.data[0].attributes.products
-          .data;
-      arr = arr.filter((item) => item.attributes.slug !== slug);
+    if (similarProducts && similarProducts.length > 0) {
+      arr = similarProducts.filter((item) => item.slug !== slug);
       arrayLength = arr.length <= 4 ? arr.length : 4;
       return getMultipleRandom(arr, arrayLength);
     }
-  }, [data]);
+  }, [similarProducts]);
 
-  // console.log(likeSuggestions)
+  // Function to handle tab change
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId); // Update the active tab state
+  };
 
   //////////////////////////// End of You may also like section ///////////////////////////////////
   return (
-    <Box>
+    <Box className="flex flex-grow flex-col justify-between">
       {alert.active && (
         <AlertBar
           alert={alert}
@@ -196,85 +139,48 @@ const SingleProduct = () => {
       <section className="text-gray-600 body-font overflow-hidden">
         {loading && <Loader />}
         {error && <div>{error}</div>}
-        {data && data.products.data.length !== 0 && (
+        {product && (
           <div className="container px-5 py-12 md:py-12 lg:py-12 mx-auto">
             <div className=" mx-auto grid gap-2 grid-cols-1 md:grid-cols-2 place-items-center">
-              <Carousel images={data.products.data[0].attributes.images} />
+              <Carousel images={product.data.data.images} />
               <div className="w-full lg:pl-10 lg:py-6 mt-6 lg:mt-0">
-                {data.products.data[0].attributes.categories.data.map((c) => (
+                {product.data.data.category.map((c) => (
                   <h2
-                    key={c.id}
+                    key={c._id}
                     className="text-sm title-font text-gray-500 tracking-widest uppercase"
                   >
-                    {c.attributes.title}
+                    {c.title}
                   </h2>
                 ))}
                 <h1 className="text-gray-900 text-3xl title-font font-medium mb-1">
-                  {data.products.data[0].attributes.title}
+                  {product.data.data.title}
                 </h1>
+                <Box>
+                  <RatingComponent rating={product.data.data.ratingsAverage} />
+                </Box>
                 <div className="flex place-items-center">
-                  {data.products.data[0].attributes.discount &&
-                  data.products.data[0].attributes.discount >= 1 ? (
+                  {product.data.data.discount &&
+                  product.data.data.discount >= 1 ? (
                     <h6 className="text-muted mr-2 text-base">
-                      <del>
-                        ${data.products.data[0]?.attributes.price.toFixed(1)}
-                      </del>
+                      <del>${product.data.data.price.toFixed(1)}</del>
                     </h6>
                   ) : (
                     ""
                   )}
                   <h4 className="font-medium text-2xl text-brown-500">
                     $
-                    {data.products.data[0].attributes.discount &&
-                    data.products.data[0].attributes.discount >= 1
+                    {product.data.data.discount &&
+                    product.data.data.discount >= 1
                       ? (
-                          data.products.data[0]?.attributes.price *
-                          (1 - data.products.data[0]?.attributes.discount / 100)
+                          product.data.data.price *
+                          (1 - product.data.data.discount / 100)
                         ).toFixed(1)
-                      : data.products.data[0]?.attributes.price.toFixed(1)}
+                      : product.data.data.price.toFixed(1)}
                   </h4>
                 </div>
                 <p className="leading-relaxed mb-4">
-                  {data.products.data[0].attributes.description}
+                  {product.data.data.description}
                 </p>
-                {size !== "" ? (
-                  <div className="flex items-center mb-4">
-                    <span className="mr-3">Size</span>
-                    <div className="relative">
-                      <select
-                        value={size}
-                        onChange={handleChange}
-                        className="rounded border appearance-none border-gray-300 py-1 focus:outline-none focus:ring-2 focus:ring-brown-200 focus:border-brown-500 text-base pl-3 pr-10"
-                      >
-                        {data.products.data[0].attributes.sizes.data.map(
-                          (size) => (
-                            <option
-                              key={size.id}
-                              value={size.attributes.size.toUpperCase()}
-                            >
-                              {size.attributes.size}
-                            </option>
-                          )
-                        )}
-                      </select>
-                      <span className="absolute right-0 top-0 h-full w-10 text-center text-gray-600 pointer-events-none flex items-center justify-center">
-                        <svg
-                          fill="none"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          className="w-4 h-4"
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M6 9l6 6 6-6"></path>
-                        </svg>
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  ""
-                )}
 
                 <div className="flex justify-between flex-col sm:flex-row">
                   <div className="flex gap-4">
@@ -295,12 +201,12 @@ const SingleProduct = () => {
                         +
                       </button>
                     </Box>
+
                     <Box className="">
                       <ButtonContained
                         func={() => {
                           handleAddToCart({
-                            ...data.products.data[0],
-                            size,
+                            ...product.data.data,
                             quantity,
                           });
                         }}
@@ -347,6 +253,61 @@ const SingleProduct = () => {
             </div>
           </div>
         )}
+
+        {product && (
+          <div className="p-8">
+            <div>
+              <ul className="flex justify-center text-center text-gray-500">
+                <li>
+                  <a
+                    href="#reviews"
+                    className={`flex justify-center py-4 px-6 ${
+                      activeTab === "reviews"
+                        ? "bg-white border-l border-t border-r border-gray-300 text-gray-600"
+                        : "text-brown-400"
+                    }`}
+                    onClick={() => handleTabChange("reviews")}
+                  >
+                    {`Reviews (${product.data.data.ratingsQuantity})`}
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#description"
+                    className={`flex justify-center py-4 px-6 ${
+                      activeTab === "description"
+                        ? "bg-white border-l border-t border-r border-gray-300 text-gray-600"
+                        : "text-brown-400"
+                    }`}
+                    onClick={() => handleTabChange("description")}
+                  >
+                    Description
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div className="bg-white  border-t border-gray-300 md:p-8 text-gray-700 -mt-0.5">
+              {/* Content for the selected tab */}
+              {activeTab === "reviews" && (
+                <div>
+                  <ReviewRatings
+                    product={product.data.data}
+                    refresh={refreshData}
+                  />
+                </div>
+              )}
+              {activeTab === "description" && (
+                <div>
+                  <h2 className="font-semibold mb-2 text-2xl">
+                    Product Description
+                  </h2>
+                  <p>{`${product.data.data.description}`}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {likeSuggestions && likeSuggestions.length >= 1 ? (
           <>
             <SectionTitle title="YOU MAY ALSO LIKE" />

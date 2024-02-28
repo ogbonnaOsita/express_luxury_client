@@ -1,9 +1,8 @@
 import { Box, Pagination } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import CategoryBanner from "../components/CategoryBanner";
 import Footer from "../components/Footer";
 import ProductList from "../components/ProductList";
-import { useQuery, gql } from "@apollo/client";
 import Loader from "../components/Loader";
 import { NoRecords } from "../components/NoRecords";
 import SortIcon from "@mui/icons-material/Sort";
@@ -11,99 +10,20 @@ import { useState } from "react";
 import { useMemo } from "react";
 import { useEffect } from "react";
 import GoToTop from "../utils/GoToTop";
-import { makeRequest } from "../../makeRequest";
+import useFetch from "../hooks/useFetch";
 
-const PRODUCTS = gql`
-  query ($slug: String!, $sort: [String!], $page: Int!, $pageLimit: Int!) {
-    products(
-      sort: $sort
-      filters: { categories: { slug: { eq: $slug } } }
-      pagination: { page: $page, pageSize: $pageLimit }
-    ) {
-      data {
-        id
-        attributes {
-          title
-          price
-          discount
-          newPrice
-          slug
-          images {
-            data {
-              attributes {
-                url
-              }
-            }
-          }
-          categories {
-            data {
-              id
-              attributes {
-                title
-              }
-            }
-          }
-        }
-      }
-      meta {
-        pagination {
-          total
-          pageCount
-        }
-      }
-    }
-  }
-`;
-
-const NEW_ARRIVALS = gql`
-  query ($sort: [String!], $page: Int!, $pageLimit: Int!) {
-    products(sort: $sort, pagination: { page: $page, pageSize: $pageLimit }) {
-      data {
-        id
-        attributes {
-          title
-          price
-          discount
-          newPrice
-          slug
-          images {
-            data {
-              attributes {
-                url
-              }
-            }
-          }
-          categories {
-            data {
-              id
-              attributes {
-                title
-              }
-            }
-          }
-        }
-      }
-      meta {
-        pagination {
-          total
-          pageCount
-        }
-      }
-    }
-  }
-`;
 const sortOptions = [
   {
     label: "Most Recent",
-    value: "createdAt:desc",
+    value: "-createdAt",
   },
   {
     label: "Price: Low to High",
-    value: "newPrice",
+    value: "price",
   },
   {
     label: "Price: High to Low",
-    value: "newPrice:desc",
+    value: "-price",
   },
 ];
 
@@ -112,21 +32,10 @@ const Categories = () => {
   const [sort, setSort] = useState(sortOptions[0].value);
   const [page, setPage] = useState(1);
   const pageLimit = 20;
-  const navigate = useNavigate();
-
-  const categories = async () => {
-    await makeRequest.get("/categories").then((res) => {
-      const ifCategory = res.data.data.some(
-        (category) => category.attributes.slug == slug
-      );
-      if (slug !== "new-arrivals" && !ifCategory) {
-        navigate("/not-found");
-      }
-    });
-  };
+  // const navigate = useNavigate();
 
   useEffect(() => {
-    categories();
+    // categories();
     setPage(1);
   }, [slug]);
 
@@ -134,28 +43,20 @@ const Categories = () => {
     setSort(event.target.value);
   };
 
-  let queryValue;
+  let queryURL;
 
   if (slug !== "new-arrivals") {
-    queryValue = PRODUCTS;
+    queryURL = `/products/category/${slug}?sort=${sort}&page=${page}&limit=${pageLimit}`;
   } else {
-    queryValue = NEW_ARRIVALS;
+    queryURL = `/products?sort=${sort}&page=${page}&limit=${pageLimit}`;
   }
 
-  const {
-    data: products,
-    loading,
-    error,
-  } = useQuery(queryValue, {
-    variables: { slug: slug, sort: sort, page: page, pageLimit: pageLimit },
-  });
+  const { data: products, loading, error } = useFetch(queryURL);
 
   //////////////// Start Pagination ///////////////////////
   const pagination = useMemo(() => {
     if (products) {
-      const noOfPages = Math.ceil(
-        products.products.meta.pagination.total / pageLimit
-      );
+      const noOfPages = Math.ceil(products.totalCount / pageLimit);
       return noOfPages;
     }
   }, [products]);
@@ -166,7 +67,7 @@ const Categories = () => {
   //////////////// End Pagination /////////////////////////
 
   return (
-    <Box>
+    <Box className="flex flex-grow flex-col justify-between">
       {loading && <Loader />}
       {error && <div>{error}</div>}
       {products && (
@@ -204,8 +105,8 @@ const Categories = () => {
               </div>
             </div>
           </Box>
-          {products.products.data.length > 0 ? (
-            <ProductList products={products.products.data} />
+          {products.data.data.length > 0 ? (
+            <ProductList products={products.data.data} />
           ) : (
             <NoRecords />
           )}

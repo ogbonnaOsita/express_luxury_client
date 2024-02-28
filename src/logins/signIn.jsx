@@ -33,32 +33,30 @@ export default function SignIn() {
   const handleSignIn = async (values) => {
     setConfirm();
     setSendEmail(values.email);
-    delete values.confirmPassword;
     setIsLoading(true);
     let data = {
-      identifier: values.email,
+      email: values.email,
       password: values.password,
     };
     await makeRequest
-      .post("/auth/local/", data)
+      .post("/users/login", data)
       .then((res) => {
-        window.localStorage.setItem("JWT_TOKEN", JSON.stringify(res.data.jwt));
-        handleSetToken(JSON.parse(localStorage.getItem("JWT_TOKEN")));
-        setIsLoading(false);
-        location.reload();
-        // navigate(-1);
+        if (res.data.data.user.role !== "user") {
+          setFormError("You are not authorized to log in here!");
+          setIsLoading(false);
+        } else {
+          window.localStorage.setItem(
+            "JWT_TOKEN",
+            JSON.stringify(res.data.token)
+          );
+          handleSetToken(JSON.parse(localStorage.getItem("JWT_TOKEN")));
+          setIsLoading(false);
+          location.reload();
+          // navigate(-1);
+        }
       })
       .catch((err) => {
-        let error;
-        if (err.response.data.error.message.includes("identifier")) {
-          error = err.response.data.error.message.replace(
-            "identifier",
-            "email"
-          );
-        } else {
-          error = err.response.data.error.message;
-        }
-        setFormError(error);
+        setFormError(err.response.data.message);
         setIsLoading(false);
       });
   };
@@ -68,16 +66,18 @@ export default function SignIn() {
     setFormError();
     let data = {
       email: sendEmail,
+      baseURL:
+        location.protocol + "//" + location.host + "/account_verification",
     };
     await makeRequest
-      .post("/auth/send-email-confirmation/", data)
+      .post("/users/resendEmailVerification", data)
       .then(() => {
         setIsLoading(false);
         setConfirm("Success! Check your email and verify your account");
         setIsLoading(false);
       })
       .catch((err) => {
-        setFormError(err.response.data.error.message);
+        setFormError(err.response.data.message);
         setIsLoading(false);
       });
   };
@@ -112,7 +112,7 @@ export default function SignIn() {
                 <div className="p-5 md:px-16 md:py-12 grow">
                   {formError && (
                     <Alert sx={{ marginBottom: "5px" }} severity="error">
-                      {formError.includes("confirmed") ? (
+                      {formError.includes("been activated") ? (
                         <p>
                           {formError}{" "}
                           <a

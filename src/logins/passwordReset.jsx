@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Footer from "../components/Footer";
 import SendArrow from "../components/SendArrow";
 import Spinner from "../components/Spinner";
@@ -22,12 +22,12 @@ const resetSchema = yup.object().shape({
     .required("required"),
 });
 export default function PasswordReset() {
-  const [searchParams] = useSearchParams();
-
+  const { reset_token } = useParams();
   const [isLoading, setIsLoading] = useState(false);
   const [formError, setFormError] = useState();
   const [success, setSuccess] = useState();
   const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
@@ -35,32 +35,28 @@ export default function PasswordReset() {
   } = useForm({ resolver: yupResolver(resetSchema) });
 
   const handlePasswordReset = async (values) => {
-    const code = searchParams.get("code");
     let data = {
-      code: code,
       password: values.password,
-      passwordConfirmation: values.confirmPassword,
+      passwordConfirm: values.confirmPassword,
     };
     setIsLoading(true);
     setFormError();
     setSuccess();
     await makeRequest
-      .post("/auth/reset-password", data)
-      .then((res) => {
+      .patch(`/users/resetPassword/${reset_token}`, data)
+      .then(() => {
         // Handle success.
-        setSuccess("Password created successfully!");
+        setSuccess("Password updated successfully!");
         setIsLoading(false);
-        console.log(res);
         setTimeout(() => {
           navigate("/sign_in");
         }, 4000);
       })
       .catch((error) => {
         // Handle error.
-        setFormError(error.response.data.error.message);
+        setFormError(error.response.data.message);
         setIsLoading(false);
       });
-    console.log(data);
   };
   return (
     <>
@@ -97,16 +93,7 @@ export default function PasswordReset() {
                   )}
                   {success && (
                     <Alert sx={{ marginBottom: "5px" }} severity="success">
-                      <p>
-                        {success}{" "}
-                        <a
-                          className="text-blue-500 cursor-pointer hover:text-blue-700 underline"
-                          onClick={() => navigate("/sign_in")}
-                        >
-                          Click here
-                        </a>{" "}
-                        to resend confirmation email
-                      </p>
+                      <p>{success}</p>
                     </Alert>
                   )}
                   <form

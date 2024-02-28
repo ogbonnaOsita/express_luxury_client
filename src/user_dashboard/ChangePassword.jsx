@@ -32,7 +32,7 @@ const ChangePassword = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors, isDirty },
+    formState: { errors },
   } = useForm({
     resolver: yupResolver(passwordSchema),
   });
@@ -41,13 +41,18 @@ const ChangePassword = () => {
     let data = {
       currentPassword: values.currPassword,
       password: values.newPassword,
-      passwordConfirmation: values.confirmPassword,
+      passwordConfirm: values.confirmPassword,
     };
+    setIsLoading(true);
     await makeAuthorizedRequest
-      .post("/auth/change-password", data)
+      .patch("/users/updateMyPassword", data)
       .then((res) => {
+        console.log(res);
         setIsLoading(false);
-        window.localStorage.setItem("JWT_TOKEN", JSON.stringify(res.data.jwt));
+        window.localStorage.setItem(
+          "JWT_TOKEN",
+          JSON.stringify(res.data.token)
+        );
         handleSetToken(JSON.parse(localStorage.getItem("JWT_TOKEN")));
         setFormMessage({
           message: "Password Updated Successfully!",
@@ -56,7 +61,7 @@ const ChangePassword = () => {
       })
       .catch((err) => {
         setFormMessage({
-          message: err.response.data.error.message,
+          message: err.response.data.message,
           type: "error",
         });
         setIsLoading(false);
@@ -135,24 +140,25 @@ const ChangePassword = () => {
           </div>
         </div>
 
-        {!isLoading ? (
-          <button
-            type="submit"
-            className="w-full inline-flex justify-center items-center space-x-2 border font-semibold rounded-xs px-6 py-3 leading-6 bg-brown-500 text-white hover:text-white hover:bg-brown-600"
-            disabled={!isDirty}
-          >
-            <span>Save</span>
-          </button>
-        ) : (
-          <button
-            type="submit"
-            className="w-full inline-flex justify-center items-center space-x-2 border font-semibold rounded-xs px-6 py-3 leading-6 bg-gray-300 text-white"
-            disabled
-          >
-            <Spinner className="spinner" />
-            <span>Save</span>
-          </button>
-        )}
+        <div>
+          {!isLoading ? (
+            <button
+              type="submit"
+              className="cursor-pointer w-full inline-flex justify-center items-center space-x-2 border font-semibold rounded-xs px-6 py-3 leading-6 bg-brown-500 text-white hover:text-white hover:bg-brown-600"
+            >
+              <span>Save</span>
+            </button>
+          ) : (
+            <button
+              type="submit"
+              className="w-full inline-flex justify-center items-center space-x-2 border font-semibold rounded-xs px-6 py-3 leading-6 bg-gray-300 text-white"
+              disabled
+            >
+              <Spinner className="spinner" />
+              <span>Save</span>
+            </button>
+          )}
+        </div>
       </form>
     </>
   );

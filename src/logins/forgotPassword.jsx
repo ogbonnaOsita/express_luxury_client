@@ -23,11 +23,13 @@ export default function ForgotPassword() {
   } = useForm({ resolver: yupResolver(forgotSchema) });
 
   const handleForgotPassword = async (values) => {
+    const baseURL =
+      location.protocol + "//" + location.host + "/reset_password";
     setIsLoading(true);
     setFormError();
     setSuccess();
     await makeRequest
-      .post("/auth/forgot-password", values)
+      .post("/users/forgotPassword", { ...values, baseURL })
       .then(() => {
         // Handle success.
         setSuccess("A Password reset Link has been sent to your mail!");

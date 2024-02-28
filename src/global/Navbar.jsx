@@ -1,10 +1,9 @@
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
-import logo from "../assets/express_logo.png";
+import logo from "../assets/logo.png";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
@@ -56,7 +55,7 @@ function Navbar() {
     setAnchorEl(null);
   };
 
-  const { data: categories } = useFetch(`categories`);
+  const { data: categories } = useFetch(`/categories`);
 
   // HANDLE MOBILE MENU
   const toggleDrawer = (currState) => (event) => {
@@ -110,17 +109,9 @@ function Navbar() {
             <Box className="">
               <Box style={{ display: "flex", alignItems: "center" }}>
                 <Link to="/">
-                  <img style={{ width: "70px" }} src={logo} />
+                  <img style={{ width: "150px" }} src={logo} />
                 </Link>
-                <Link to="/">
-                  <Typography
-                    variant="a3"
-                    ml={1}
-                    sx={{ fontSize: { xs: "20px", md: "24px" } }}
-                  >
-                    Express Luxury
-                  </Typography>
-                </Link>
+                <Link to="/"></Link>
               </Box>
             </Box>
 
@@ -280,17 +271,17 @@ function Navbar() {
                           </ListItemButton>
                         </ListItem>
                       </Link>
-                      {categories.map((category, index) => (
+                      {categories.data.data.map((category, index) => (
                         <Link
                           reloadDocument
-                          to={`categories/${category.attributes.slug}`}
+                          to={`categories/${category.slug}`}
                           key={index}
                         >
                           <ListItem disablePadding>
                             <ListItemButton>
                               <ListItemText
                                 sx={{ textTransform: "capitalize" }}
-                                primary={category.attributes.title}
+                                primary={category.title}
                               />
                             </ListItemButton>
                           </ListItem>
@@ -365,8 +356,8 @@ function Navbar() {
                   New Arrivals
                 </Button>
               </Link>
-              {categories.map((category, i) => (
-                <Link key={i} to={`categories/${category.attributes.slug}`}>
+              {categories.data.data.map((category, i) => (
+                <Link key={i} to={`categories/${category.slug}`}>
                   <Button
                     sx={{
                       color: "inherit",
@@ -379,7 +370,7 @@ function Navbar() {
                       },
                     }}
                   >
-                    {category.attributes.title}
+                    {category.title}
                   </Button>
                 </Link>
               ))}

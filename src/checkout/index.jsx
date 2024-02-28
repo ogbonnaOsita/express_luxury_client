@@ -15,7 +15,7 @@ const phoneRegExp =
 
 const checkoutSchema = yup.object().shape({
   email: yup.string().email("Invalid email").required("required"),
-  phoneNumber: yup
+  phone: yup
     .string()
     .matches(phoneRegExp, "Please enter a valid phone number")
     .required("required"),
@@ -24,7 +24,7 @@ const checkoutSchema = yup.object().shape({
     .typeError("Please enter your postal code")
     .integer()
     .required("required"),
-  address: yup.string().required("required"),
+  shippingAddress: yup.string().required("required"),
   city: yup.string().required("required"),
   state: yup.string().required("required"),
 });
@@ -39,7 +39,7 @@ export default function Checkout() {
     makeAuthorizedRequest
       .get("/users/me")
       .then((res) => {
-        setUser(res.data);
+        setUser(res.data.data.data);
       })
       .catch(() => {
         setError("Something went wrong");
@@ -56,21 +56,51 @@ export default function Checkout() {
     formState: { errors },
   } = useForm({ resolver: yupResolver(checkoutSchema) });
 
+  // FUNCTION TO HANDLE PAYMENT
   const handlePayment = async (data) => {
-    const values = [products, data];
+    let amount = 0;
+    let totalQty = 0;
+    products.map((product) => {
+      amount += product.quantity * product.price;
+      totalQty += product.quantity;
+    });
+
+    // CREATE METADATA FOR PAYSTACK
+    const metadata = {
+      // products: filterAndDelete(products, ["id", "quantity", "price"]),
+      products: products.map(({ id, quantity, price }) => ({
+        id,
+        quantity,
+        price,
+      })),
+      totalQty: parseInt(totalQty),
+      totalCost: parseInt(amount),
+      phone: data.phone,
+      shippingAddress: data.shippingAddress,
+      city: data.city,
+      state: data.state,
+      postalCode: parseInt(data.postalCode),
+    };
+
+    const paystackData = {
+      amount,
+      metadata,
+      callback_url: location.protocol + "//" + location.host + "/verify",
+    };
+
+    delete data.email;
     setIsLoading(true);
     try {
+      await makeAuthorizedRequest.patch("/users/updateMe", data);
       await makeAuthorizedRequest
-        .post("/paystack", {
-          values,
-        })
+        .post("/payments", paystackData)
         .then((res) => {
           setIsLoading(false);
-          window.location.href = res.data.paystack.authorization_url;
+          window.location.href = res.data.data.data.data.authorization_url;
         });
     } catch (err) {
       setIsLoading(false);
-      console.log(err.message);
+      console.log(err);
     }
   };
 
@@ -130,6 +160,7 @@ export default function Checkout() {
                           defaultValue={user.email}
                           placeholder="Enter your email address"
                           {...register("email")}
+                          readOnly
                           className="w-full block border placeholder-gray-500 px-5 py-2 leading-6 rounded-xs border-gray-200"
                         />
                         {errors.email && (
@@ -139,40 +170,43 @@ export default function Checkout() {
                         )}
                       </div>
                       <div className="space-y-1">
-                        <label htmlFor="phoneNumber" className="font-medium">
+                        <label htmlFor="phone" className="font-medium">
                           Phone Number
                         </label>
                         <input
                           type="number"
-                          id="phoneNumber"
-                          name="phoneNumber"
-                          defaultValue={user.phoneNumber}
+                          id="phone"
+                          name="phone"
+                          defaultValue={user.phone}
                           placeholder="Enter your phone number"
-                          {...register("phoneNumber")}
+                          {...register("phone")}
                           className="w-full block border placeholder-gray-500 px-5 py-2 leading-6 rounded-xs border-gray-200"
                         />
-                        {errors.phoneNumber && (
+                        {errors.phone && (
                           <span className="text-red-500 text-xs">
-                            {errors.phoneNumber?.message}
+                            {errors.phone?.message}
                           </span>
                         )}
                       </div>
                       <div className="space-y-1">
-                        <label htmlFor="address" className="font-medium">
+                        <label
+                          htmlFor="shippingAddress"
+                          className="font-medium"
+                        >
                           Shipping Address
                         </label>
                         <input
                           type="text"
-                          id="address"
-                          name="address"
-                          defaultValue={user.address}
+                          id="shippingAddress"
+                          name="shippingAddress"
+                          defaultValue={user.shippingAddress}
                           placeholder="Enter your street address"
-                          {...register("address")}
+                          {...register("shippingAddress")}
                           className="w-full block border placeholder-gray-500 px-5 py-2 leading-6 rounded-xs border-gray-200"
                         />
-                        {errors.address && (
+                        {errors.shippingAddress && (
                           <span className="text-red-500 text-xs">
-                            {errors.address?.message}
+                            {errors.shippingAddress?.message}
                           </span>
                         )}
                       </div>
@@ -224,7 +258,7 @@ export default function Checkout() {
                             id="state"
                             name="state"
                             defaultValue={user.state}
-                            placeholder="City"
+                            placeholder="State"
                             {...register("state")}
                             className="w-full block border placeholder-gray-500 px-5 py-2 leading-6 rounded-xs border-gray-200"
                           />
